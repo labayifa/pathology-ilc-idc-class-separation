@@ -1,0 +1,9 @@
+defaults: base.yaml
+run_name: "uni2h_lr"
+feature_set: "uni2h"
+feature_dim: 1536
+classifier_head: "lr"
+pooling: "mean"
+lr_params:
+  C: 1.0
+  max_iter: 2000

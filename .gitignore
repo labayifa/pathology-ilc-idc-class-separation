@@ -1,0 +1,31 @@
+# Derived binary artifacts -- large, regenerable, or non-redistributable
+# (licensed TCGA slides / foundation-model-derived features)
+*.pt
+*.svs
+code/configs/ablation_generated/
+results/checkpoints/
+results/experiments.db
+results/*.db
+
+# LaTeX build artifacts
+paper/*.aux
+paper/*.log
+paper/*.bbl
+paper/*.blg
+paper/*.out
+paper/*.toc
+paper/*.synctex.gz
+paper/compile*.log
+paper/bibtex.log
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# WandB local run dirs (anything run from code/)
+code/wandb/
+
+# OS cruft
+.DS_Store
+._*

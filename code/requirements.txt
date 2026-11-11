@@ -1,0 +1,14 @@
+torch>=2.0
+torchvision
+timm>=0.9.8
+transformers
+huggingface_hub
+scikit-learn
+pillow
+numpy
+aiohttp
+certifi
+pyyaml
+wandb
+matplotlib
+pandas

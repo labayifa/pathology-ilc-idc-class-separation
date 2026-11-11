@@ -1,0 +1,10 @@
+defaults: base.yaml
+run_name: "baseline_cnn_svm"
+feature_set: "baseline_cnn"
+feature_dim: 512
+classifier_head: "svm"
+pooling: "mean"
+svm_params:
+  C: 1.0
+  kernel: "rbf"
+  probability: true

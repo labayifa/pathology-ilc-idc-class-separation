@@ -1,0 +1,9 @@
+defaults: base.yaml
+run_name: "uni2h_llm"
+feature_set: "uni2h"
+feature_dim: 1536
+classifier_head: "llm_zeroshot"
+llm:
+  model_name: "Qwen/Qwen2.5-0.5B-Instruct"
+  seed: 0
+  k_signals: 8

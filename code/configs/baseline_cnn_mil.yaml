@@ -1,0 +1,13 @@
+defaults: base.yaml
+run_name: "baseline_cnn_mil"
+feature_set: "baseline_cnn"
+feature_dim: 512
+classifier_head: "mil"
+train:
+  epochs: 50
+  lr: 0.0003
+  weight_decay: 0.0001
+  hidden_dim: 256
+  dropout: 0.25
+mil:
+  attention_dim: 128

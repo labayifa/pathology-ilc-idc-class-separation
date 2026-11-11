@@ -1,0 +1,6 @@
+# SVM kernel ablation (4 standard sklearn kernels), both feature sets.
+base_configs:
+  - uni2h_svm.yaml
+  - baseline_cnn_svm.yaml
+grid:
+  svm_params.kernel: ["linear", "rbf", "poly", "sigmoid"]

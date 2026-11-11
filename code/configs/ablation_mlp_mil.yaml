@@ -1,0 +1,22 @@
+# MLP/MIL ablation: dropout x epochs x optimizer x scheduler, both feature
+# sets. 3 x 3 x 2 x 2 = 36 combos per base config x 4 base configs = 144 runs
+# total -- meant for the GPU VM (full 5-seed x 5-fold spec), not local MPS.
+#
+# optimizer_profile pairs each optimizer with an LR suited to it: Adam and
+# SGD don't share a sensible default learning rate (SGD has no per-parameter
+# adaptive scaling, so it needs a substantially higher LR to move at all) --
+# using one fixed base-config LR for both would make the "optimizer"
+# comparison mostly a "which one tolerates this LR better" comparison
+# instead.
+base_configs:
+  - uni2h_mlp.yaml
+  - uni2h_mil.yaml
+  - baseline_cnn_mlp.yaml
+  - baseline_cnn_mil.yaml
+grid:
+  train.dropout: [0.1, 0.2, 0.3]
+  train.epochs: [50, 100, 150]
+  optimizer_profile:
+    - {train.optimizer: "adam", train.lr: 0.0003}
+    - {train.optimizer: "sgd", train.lr: 0.01}
+  train.scheduler: ["cosine", "step"]

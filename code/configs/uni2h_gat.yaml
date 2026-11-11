@@ -1,0 +1,15 @@
+defaults: base.yaml
+run_name: "uni2h_gat"
+feature_set: "uni2h"
+feature_dim: 1536
+classifier_head: "gat"
+train:
+  epochs: 50
+  lr: 0.0003
+  weight_decay: 0.0001
+  hidden_dim: 256
+  dropout: 0.1
+gat:
+  k_neighbors: 8
+  n_heads: 4
+  n_layers: 2

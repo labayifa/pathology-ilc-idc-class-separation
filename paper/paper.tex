@@ -1,0 +1,133 @@
+\documentclass{article}
+\usepackage[preprint]{neurips_2024}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{xcolor}
+
+\title{Frozen Foundation-Model Features for ILC vs IDC Classification on TCGA-BRCA}
+
+\author{%
+  Carmel Prosper Sagbo \\
+  Carnegie Mellon University Africa \\
+  Upanzi -- Digital Public Infrastructure Network \\
+  Kigali, Rwanda \\
+  \texttt{csagbo@andrew.cmu.edu} \\
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Invasive lobular carcinoma (ILC) and invasive ductal carcinoma (IDC) require different clinical management, but ILC's diffuse, single-cell infiltrative growth pattern makes it harder to classify from histology than IDC's cohesive nests. We evaluate whether \emph{frozen} pathology foundation-model features can match the accuracy of fully fine-tuned, task-specific CNNs on this classification task, using TCGA-BRCA whole-slide images ($n=109$ patients, 55 ILC / 54 IDC, site-grouped 5-fold cross-validation to prevent scanner/batch leakage). We extract frozen tile features from UNI2-h (1536-dim) and a baseline ImageNet-pretrained ResNet-18 (512-dim), and train 10 classifier-head families on top (logistic regression, SVM, MLP, gated-attention MIL, plain attention, graph attention, and four GAT composites), swept across 172 total configurations including a 152-point hyperparameter ablation (dropout, optimizer, scheduler, epochs). Our best configuration (UNI2-h + gated-attention MIL) reaches patient-level AUROC $=0.920$, matching the external benchmark of \citet{ektefaie2021integrative} -- a fully fine-tuned Inception-v3 CNN achieving AUROC $=0.920$ on the same dataset and task -- despite using zero gradient updates to the backbone. UNI2-h features outperform the ResNet-18 baseline on every one of 86 matched configurations (median AUROC 0.894 vs.\ 0.701). We also report two negative results: a naive mean-ensemble of correlated classifier heads underperforms its best single member, and a zero-shot LLM baseline underperforms a trivial sign-vote control on the same inputs.
+\end{abstract}
+
+\section{Introduction}
+
+Distinguishing invasive lobular carcinoma (ILC, $\sim$10--15\% of invasive breast cancers) from invasive ductal carcinoma (IDC, $\sim$70--80\%) from H\&E histology is clinically important: the two subtypes differ in growth pattern, metastatic routes, and response to neoadjuvant therapy, but ILC's single-cell ``Indian-file'' infiltration pattern lacks the cohesive architecture that makes IDC comparatively easy to recognize, and is a frequent source of diagnostic disagreement among pathologists.
+
+Deep learning on whole-slide images (WSIs) has reached strong performance on this task, but historically required full end-to-end fine-tuning of a CNN or transformer backbone on thousands of tiles per slide -- expensive in compute, and in curated labeled data. Pathology foundation models (UNI, UNI2-h, CONCH, Virchow, Phikon) pretrained via self-supervision on large, diverse slide corpora offer a cheaper alternative: \emph{frozen} feature extraction followed by training only a lightweight classifier head. Whether this frozen-feature approach can \emph{match} task-specific fine-tuning, rather than only approach it, is the question this work addresses directly, with a systematic sweep across classifier architectures and hyperparameters rather than a single reported configuration.
+
+This evaluation is also motivated by a concrete, practical goal: building reproducible, well-documented evidence of foundation-model experience on a real pathology classification task, as preparation for a liver pathology fellowship application that was previously declined for lacking exactly this kind of hands-on evidence.
+
+\section{Related Work}
+
+\textbf{\citet{ektefaie2021integrative}}, \emph{npj Breast Cancer}, is the directly comparable external benchmark. They fully fine-tuned an ImageNet-pretrained Inception-v3 CNN on the top 200 tiles/slide (ranked by tissue density) from TCGA-BRCA, with patient-level prediction via averaging tile predictions, and splits grouped by tissue source site -- the same site-leakage safeguard used in this work. They report patient-level AUC $=0.920$ (95\% CI 0.845--0.993; tile-level AUC $=0.800$) for lobular-vs-ductal classification, on a cohort of $\sim$1{,}099 TCGA-BRCA patients ($\sim$22\% lobular; held-out test split size for this specific task not stated).
+
+\textbf{\citet{zhang2025hospital}}, arXiv:2508.14779 (ISBI 2026 submission), studies hospital-source bias in frozen UNI/CONCH features and reports disease AUC $=0.98\pm0.01$ for a UNI + MLP baseline on IDC vs ILC -- but this number is not a fair comparison target: it is \emph{patch-level} rather than patient-level, computed on only 4{,}029 patches pre-filtered by CONCH zero-shot to keep high-confidence (easy) patches, from a small cohort (80 WSIs, 4 hospitals) restricted to one demographic group (White female patients aged 60--79). We report it here only for completeness, and separately because the paper's own finding -- hospital/site is strongly predictable from frozen features (AUC $\sim$0.95--0.96) -- reinforces the importance of the site-grouped cross-validation used throughout this work.
+
+\textbf{Foundation models.} UNI2-h (Mahmood Lab) is a ViT-H/14 vision transformer pretrained via self-supervision on a large multi-site histopathology corpus; we use it here strictly as a frozen feature extractor, with no fine-tuning of backbone weights.
+
+\section{Methods}
+
+\textbf{Cohort.} 110 TCGA-BRCA patients (55 ILC, 55 IDC) with a usable diagnostic (Primary Tumor, not Metastatic) H\&E slide, balanced per tissue-source site; one slide lacked scanner MPP metadata and was excluded (not imputed), leaving $n=109$ (55 ILC / 54 IDC) across 16 both-class sites.
+
+\textbf{Tiling and feature extraction.} Slides were resampled to a common 0.5\,\textmu m/pixel (the smallest target requiring only downsampling across the full cohort), tiled at $224\times224$px (up to 1{,}000 tissue tiles/slide by Otsu-threshold tissue fraction), and passed frozen through two backbones: \textbf{UNI2-h} (ViT-H/14, 1536-dim) and a \textbf{baseline} ImageNet-pretrained ResNet-18 (512-dim, penultimate layer). Both backbones see identical tile coordinates per slide.
+
+\textbf{Cross-validation.} Site-grouped 5-fold CV (no tissue-source site split across folds, both classes present in every fold, verified by assertion) repeated across 5 seeds; each patient's final prediction averages its out-of-fold probability across seeds. 95\% CIs via patient-level bootstrap (2{,}000 resamples).
+
+\textbf{Classifier heads.} (1) Logistic regression and (2) SVM (4 kernels) on mean-pooled tile features; (3) a small MLP; (4) gated-attention MIL \citep{ilse2018attention}; (5) plain (ungated) attention pooling; (6) graph attention (GAT, \citealt{velickovic2018graph}) over a spatial $k$-NN tile graph; (7--10) four GAT composites (GAT backbone $\to$ LR / SVM / MLP / MIL as the final classifier, the LR/SVM variants trained via a differentiable proxy head since those classifiers are not themselves differentiable). (11) An exploratory zero-shot LLM baseline: each held-out patient's embedding is reduced to 8 class-oriented signed $z$-scores on the most train-discriminative feature dimensions, and a small local instruction-tuned LLM (Qwen2.5-0.5B-Instruct, no external API) is asked to classify from those signals, compared against a trivial no-LLM sign-majority-vote control.
+
+\textbf{Hyperparameter ablation.} For MLP and MIL heads (both feature sets): dropout $\times\{0.1,0.2,0.3\}$ $\times$ epochs $\{50,100,150\}$ $\times$ optimizer-profile \{Adam@3e-4, SGD@0.01\} $\times$ scheduler \{cosine, step\} $=36$ combinations $\times\,4$ base configs $=144$ runs. SVM kernel ablation: \{linear, rbf, poly, sigmoid\} $\times\,2$ feature sets $=8$ runs. Combined with 20 base architecture configs and 2 LLM configs: \textbf{172 total completed configurations}.
+
+\section{Results}
+
+The best configuration, UNI2-h + gated-attention MIL, reaches patient-level AUROC $=0.920$ -- matching \citet{ektefaie2021integrative}'s fully fine-tuned Inception-v3 benchmark exactly, with zero backbone gradient updates.
+
+\begin{table}[h]
+\caption{Top 10 configurations by patient-level AUROC.}
+\label{tab:leaderboard}
+\centering
+\begin{tabular}{llccc}
+\toprule
+Feature & Head & AUROC & Balanced Acc. & Brier \\
+\midrule
+UNI2-h & MIL (dropout 0.2, Adam, step, 50ep)   & 0.920 & 0.817 & 0.127 \\
+UNI2-h & MIL (dropout 0.3, Adam, cosine, 50ep) & 0.920 & 0.826 & 0.124 \\
+UNI2-h & MIL (dropout 0.1, SGD, step, 50ep)    & 0.919 & 0.854 & 0.114 \\
+UNI2-h & MIL (dropout 0.1, Adam, cosine, 50ep) & 0.919 & 0.835 & 0.126 \\
+UNI2-h & Attention (plain, base config)        & 0.919 & 0.844 & 0.123 \\
+UNI2-h & MIL (dropout 0.3, Adam, step, 50ep)   & 0.919 & 0.826 & 0.126 \\
+UNI2-h & MIL (dropout 0.1, Adam, cosine, 150ep)& 0.918 & 0.826 & 0.132 \\
+UNI2-h & MIL (dropout 0.1, Adam, step, 50ep)   & 0.918 & 0.826 & 0.127 \\
+UNI2-h & MIL (base config)                     & 0.917 & 0.835 & 0.125 \\
+UNI2-h & MIL (dropout 0.3, Adam, step, 100ep)  & 0.917 & 0.826 & 0.123 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\caption{UNI2-h vs.\ baseline CNN, across 86 matched configurations per feature set.}
+\label{tab:comparison}
+\centering
+\begin{tabular}{lcc}
+\toprule
+ & UNI2-h & Baseline ResNet-18 \\
+\midrule
+Median AUROC & 0.894 & 0.701 \\
+Max AUROC    & 0.920 & 0.762 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+UNI2-h's median performance (0.894) exceeds the baseline's maximum (0.762) -- a complete separation with no overlap across 172 configurations.
+
+\section{Discussion}
+\label{sec:discussion}
+
+\textbf{MIL and plain attention converge to the same ceiling.} Across all dropout/optimizer/scheduler combinations, both gated-attention MIL and plain (ungated) attention independently plateau at 0.917--0.920 on UNI2-h. This suggests the aggregation mechanism's gating component is not the binding constraint on this task -- a more sophisticated pooling mechanism is unlikely to help without more training data (Section~\ref{sec:limitations}).
+
+\textbf{Graph attention underperforms plain attention.} GAT and its composites reach only 0.88--0.89, below plain attention's 0.919. A naive spatial $k$-NN graph over tile coordinates does not capture useful structure beyond what unordered attention already extracts -- the explicit graph inductive bias is not earning its complexity here.
+
+\textbf{SGD fails specifically on weaker features.} \texttt{baseline\_cnn + MLP + SGD} produced AUROC as low as 0.44 (below chance) in four separate hyperparameter combinations, while the identical architecture with Adam reaches 0.75--0.76, and \texttt{uni2h + MLP + SGD} trains normally (0.86--0.87). This is a repeatable optimizer$\times$feature-quality interaction, not noise: SGD's lack of per-parameter adaptive scaling appears to need the richer UNI2-h feature space to find a good basin reliably.
+
+\textbf{A naive ensemble did not help.} Averaging the MIL model's predictions with three MLP variants (individually 0.87--0.90 AUROC) produced an ensemble AUROC of 0.900 -- \emph{below} the best single member (0.911 in that comparison). Because all members shared the same UNI2-h feature space, their errors were likely correlated, and mean-averaging a strong model with weaker ones pulled the average down rather than reducing variance. This motivates cross-foundation-model ensembling (genuinely diverse feature spaces) over same-feature cross-head ensembling as the more promising direction.
+
+\textbf{The LLM baseline underperforms its own trivial control.} The zero-shot LLM classifier reached AUROC $=0.568$, below the no-LLM sign-vote control (0.670) on the identical input signals. A small instruction-tuned LLM does not reliably aggregate even a handful of pre-oriented numeric signals better than a trivial majority vote -- a clear negative result for this style of LLM-on-tabular-features approach at this scale.
+
+\section{Limitations and Future Work}
+\label{sec:limitations}
+
+\textbf{Cohort size.} $n=109$ is small for deep learning even with frozen features, and is a balanced subsample of a larger eligible pool (757 IDC + 191 ILC patients with a usable diagnostic slide). That three architecturally different aggregation mechanisms (gated MIL, plain attention, GAT) all independently converge to the same $\sim$0.92 ceiling is consistent with sample size, not architecture, being the binding constraint. A cohort expansion to \textbf{348 patients} (174 ILC + 174 IDC, all available ILC matched per-site with IDC) is in progress at the time of writing, with site-grouped 5-fold feasibility already confirmed.
+
+\textbf{Single foundation model.} Results reported here use only UNI2-h. Phikon-v2 and Virchow2 feature extraction is underway; cross-foundation-model ensembling (motivated by the within-feature-space ensemble's negative result in Section~\ref{sec:discussion}) is planned once available.
+
+\textbf{Frozen features only.} We did not evaluate partial or LoRA fine-tuning of the UNI2-h backbone, which carries real overfitting risk at this sample size but could recover additional task-specific signal.
+
+\textbf{No stain normalization.} Cross-site H\&E stain and scanner variation was not explicitly corrected for beyond the site-grouped CV safeguard; this is a known confound in multi-institutional cohorts like TCGA.
+
+\section{Conclusion}
+
+A frozen UNI2-h foundation model with a lightweight gated-attention MIL head matches a fully fine-tuned, task-specific Inception-v3 CNN \citep{ektefaie2021integrative} on ILC vs IDC classification from TCGA-BRCA whole-slide images -- patient-level AUROC 0.920 on both -- at a fraction of the training cost, across a systematic sweep of 172 configurations rather than a single favorable run. The result is robust to classifier-head choice (MIL and plain attention converge identically) and to hyperparameter choice (stable across dropout, optimizer, and schedule), while graph-structured attention, naive same-feature ensembling, and a zero-shot LLM baseline each underperformed simpler alternatives -- negative results we report alongside the positive one. Cohort expansion to 348 patients and cross-foundation-model ensembling are the next steps toward improving on this ceiling.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

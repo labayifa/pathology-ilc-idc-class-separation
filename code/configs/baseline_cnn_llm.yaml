@@ -1,0 +1,9 @@
+defaults: base.yaml
+run_name: "baseline_cnn_llm"
+feature_set: "baseline_cnn"
+feature_dim: 512
+classifier_head: "llm_zeroshot"
+llm:
+  model_name: "Qwen/Qwen2.5-0.5B-Instruct"
+  seed: 0
+  k_signals: 8

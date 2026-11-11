@@ -1,0 +1,30 @@
+# Shared defaults. Variant configs set `defaults: base.yaml` and override
+# only what differs -- train_evaluate.py deep-merges the variant on top.
+features_dir: "/Volumes/Carmel Disk/Cancer_Data_Carmel/Pathology_Project/features"
+folds_csv: "../cohort/folds.csv"
+results_csv: "../results/results_summary.csv"
+db_path: "../results/experiments.db"
+checkpoint_dir: "../results/checkpoints"
+predictions_dir: "../results/predictions"
+n_folds: 5
+seeds: [0, 1, 2, 3, 4]
+
+wandb:
+  project: "pathology-ilc-idc"
+  entity: null
+  mode: "online"
+
+bootstrap:
+  n_resamples: 2000
+  ci: 0.95
+  random_state: 0
+
+train:
+  epochs: 50
+  lr: 0.0003
+  weight_decay: 0.0001
+  hidden_dim: 256
+  dropout: 0.25
+  seed: 0
+  optimizer: "adam"
+  scheduler: "none"

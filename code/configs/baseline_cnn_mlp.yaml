@@ -1,0 +1,12 @@
+defaults: base.yaml
+run_name: "baseline_cnn_mlp"
+feature_set: "baseline_cnn"
+feature_dim: 512
+classifier_head: "mlp"
+pooling: "mean"
+train:
+  epochs: 100
+  lr: 0.001
+  weight_decay: 0.0001
+  hidden_dim: 128
+  dropout: 0.3
