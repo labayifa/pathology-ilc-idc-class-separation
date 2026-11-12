@@ -4,11 +4,12 @@ Frozen pathology foundation-model features (UNI2-h) vs. a baseline ImageNet
 CNN, for Invasive Lobular Carcinoma (ILC) vs. Invasive Ductal Carcinoma (IDC)
 classification on TCGA-BRCA whole-slide images. See `paper/paper.tex` for
 the full write-up, `notes/external_benchmarks.md` for how results compare
-to prior work, and `results/results_summary.csv` for the complete sweep
-(178 rows: 88 UNI2-h-feature-set runs and 88 baseline-CNN-feature-set runs
-— each including the 172-config architecture/ablation grid plus one
-sign-vote control and one LLM baseline per feature set — and 2 ensemble
-runs combining multiple UNI2-h configs).
+to prior work, and `results/results_summary.csv` for the complete sweep:
+174 total model-training runs (172 under the standard CV protocol, 86 per
+feature set, plus 2 exploratory LLM-baseline configs under a different
+protocol), plus 4 rows derived from those runs' saved predictions without
+any new training (2 sign-vote controls, 2 mean-probability ensembles), for
+178 rows total. See `paper/paper.tex` Section 3 for the full accounting.
 
 **Headline result**: frozen UNI2-h + a gated-attention MIL head, at a single
 pre-specified default configuration, reaches patient-level AUROC = 0.917
@@ -34,6 +35,8 @@ data, or are fully regenerable from the steps below. See "Data and licensing".
 
 ## Data and licensing
 
+This repository's own code is MIT-licensed (see `LICENSE`).
+
 - **TCGA-BRCA slides**: public, from the NCI Genomic Data Commons (GDC), under
   TCGA's standard data use policy. Downloaded via `code/download_tcga.py`
   (async, resumable, md5-verified) using `code/select_cohort.py`'s cohort
@@ -47,8 +50,12 @@ data, or are fully regenerable from the steps below. See "Data and licensing".
 
 ## Reproducing the pipeline
 
-All scripts live in `code/`. Python 3.11+ (3.13 recommended), see
-`code/requirements.txt`. Tiling/extraction additionally needs OpenSlide
+All scripts live in `code/`. Python 3.11+ (3.13.18 used for the reported
+run), see `code/requirements.txt` (pinned to the exact versions from that
+run; `torch` was installed as `2.15.0+cu132` on the AWS GPU instance — the
+CUDA build suffix is omitted from the pin since it's hardware-specific,
+install the CPU/MPS build instead on a non-CUDA machine). Tiling/extraction
+additionally needs OpenSlide
 (`brew install openslide-bin && pip install openslide-python` on macOS;
 `apt install openslide-tools && pip install openslide-python` on Ubuntu).
 
