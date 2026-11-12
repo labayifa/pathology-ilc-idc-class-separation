@@ -1,6 +1,6 @@
 # Shared defaults. Variant configs set `defaults: base.yaml` and override
 # only what differs -- train_evaluate.py deep-merges the variant on top.
-features_dir: "/Volumes/Carmel Disk/Cancer_Data_Carmel/Pathology_Project/features"
+features_dir: "/path/to/features"
 folds_csv: "../cohort/folds.csv"
 results_csv: "../results/results_summary.csv"
 db_path: "../results/experiments.db"

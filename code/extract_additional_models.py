@@ -12,8 +12,8 @@ pending Bioptimus's manual review. Revisit both later if time allows.
 
 Usage:
     python extract_additional_models.py \
-        --features-dir "/Volumes/Carmel Disk/Cancer_Data_Carmel/Pathology_Project/features" \
-        --slide-dir "/Volumes/Carmel Disk/Cancer_Data_Carmel/Pathology_Project/tcga_slides"
+        --features-dir "/path/to/features" \
+        --slide-dir "/path/to/slides"
 """
 from __future__ import annotations
 

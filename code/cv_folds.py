@@ -14,7 +14,7 @@ fold assignments are a reasonable way to get repeats.
 Usage:
     python cv_folds.py \
         --cohort ../cohort/cohort.csv \
-        --features-dir "/Volumes/Carmel Disk/Cancer_Data_Carmel/Pathology_Project/features" \
+        --features-dir "/path/to/features" \
         --out ../cohort/folds.csv \
         --n-folds 5 --n-seeds 5
 """

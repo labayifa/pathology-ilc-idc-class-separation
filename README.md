@@ -4,13 +4,17 @@ Frozen pathology foundation-model features (UNI2-h) vs. a baseline ImageNet
 CNN, for Invasive Lobular Carcinoma (ILC) vs. Invasive Ductal Carcinoma (IDC)
 classification on TCGA-BRCA whole-slide images. See `paper/paper.tex` for
 the full write-up, `notes/external_benchmarks.md` for how results compare
-to prior work, and `results/results_summary.csv` for the complete
-172-configuration sweep.
+to prior work, and `results/results_summary.csv` for the complete sweep
+(178 rows: 88 UNI2-h-feature-set runs and 88 baseline-CNN-feature-set runs
+— each including the 172-config architecture/ablation grid plus one
+sign-vote control and one LLM baseline per feature set — and 2 ensemble
+runs combining multiple UNI2-h configs).
 
-**Headline result**: frozen UNI2-h + a gated-attention MIL head reaches
-patient-level AUROC = 0.920, matching a fully fine-tuned Inception-v3 CNN
-(Ektefaie et al. 2021, *npj Breast Cancer*) on the same dataset and task,
-with zero backbone gradient updates.
+**Headline result**: frozen UNI2-h + a gated-attention MIL head, at a single
+pre-specified default configuration, reaches patient-level AUROC = 0.917
+(95% CI [0.852, 0.968]), comparable to a fully fine-tuned Inception-v3 CNN
+(Ektefaie et al. 2021, *npj Breast Cancer*: AUROC = 0.920, 95% CI [0.845,
+0.993]) on the same dataset and task, with zero backbone gradient updates.
 
 ## Repo structure
 

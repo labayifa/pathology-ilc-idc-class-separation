@@ -1,8 +1,8 @@
 """Combines the saved per-patient OOF predictions from several already-run
 configs into a simple mean-probability ensemble -- no retraining needed,
 since train_evaluate.py now saves every config's per-patient prediction to
-results/predictions/{run_name}.csv. The goal (per the KU Leuven plan) is to
-see whether combining classifier heads (and later, foundation models once
+results/predictions/{run_name}.csv. The goal is to see whether combining
+classifier heads (and later, foundation models once
 Phikon-v2/Virchow2 finish) beats any single config, and how that compares to
 the Ektefaie et al. 2021 (npj Breast Cancer) external benchmark of 0.920
 patient-level AUC for lobular-vs-ductal on TCGA-BRCA.

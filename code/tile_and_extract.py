@@ -13,8 +13,8 @@ feature tensors, tile coordinates, and tissue fractions.
 Usage:
     python tile_and_extract.py \
         --cohort ../cohort/cohort.csv \
-        --slide-dir "/Volumes/Carmel Disk/Cancer_Data_Carmel/Pathology_Project/tcga_slides" \
-        --out-dir "/Volumes/Carmel Disk/Cancer_Data_Carmel/Pathology_Project/features"
+        --slide-dir "/path/to/slides" \
+        --out-dir "/path/to/features"
 """
 from __future__ import annotations
 

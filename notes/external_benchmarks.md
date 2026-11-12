@@ -13,12 +13,12 @@ Ektefaie Y, Yuan W, Dillon DA, Lin NU, Golden JA, Kohane IS, Yu KH. "Integrative
 | Aggregation | Patient-level prediction via averaging tile predictions ("range voting") |
 | Validation | Splits grouped by tissue source site — same safeguard this project's `cv_folds.py` implements |
 | Cohort | TCGA-BRCA, ~1099 patients total, ~22% lobular (held-out test split size for this specific task not stated in the paper — wide CI suggests it's small) |
-| **Result (TCGA held-out, internal)** | **Patient-level AUC = 0.920** (95% CI 0.845–0.993); tile-level AUC = 0.800 |
+| **Result (TCGA held-out)** | **Patient-level AUC = 0.920** (95% CI 0.845–0.993); tile-level AUC = 0.800 |
 | External validation cohort (different task, not the target) | Patient-level AUC = 0.996, tile-level AUC = 0.843 |
 
 **Why this is the fair target**: same dataset (TCGA-BRCA), same task (ILC vs IDC / lobular vs ductal), same patient-level evaluation granularity, and the same site-grouping discipline this project already uses to avoid leakage.
 
-**Current status (11 Nov 2026, sweep in progress)**: `uni2h + MIL` already matches this — 8 completed hyperparameter variants (dropout/optimizer/scheduler) all land in **0.90–0.92 patient-level AUROC**, using a *frozen* foundation model + lightweight attention head rather than full end-to-end fine-tuning. That contrast (frozen-feature transfer learning competitive with task-specific fine-tuning) is the headline comparison for the fellowship narrative.
+**Final status (12 Nov 2026, full sweep complete)**: `uni2h + MIL` at its pre-specified default configuration reaches patient-level AUROC = 0.917 (95% CI 0.852–0.968), comparable to but not matching or exceeding Ektefaie's 0.920 (95% CI 0.845–0.993) given the overlapping intervals. Across the full hyperparameter sweep, MIL and plain-attention variants on `uni2h` land in 0.90–0.92, using a *frozen* foundation model + lightweight attention head rather than full end-to-end fine-tuning. That contrast (frozen-feature transfer learning comparable to task-specific fine-tuning) is the headline comparison for the fellowship narrative — framed as "comparable to," not "matches," per the paper's own confidence intervals.
 
 ## 2. Zhang 2025 — not a fair target, do not chase this number
 
